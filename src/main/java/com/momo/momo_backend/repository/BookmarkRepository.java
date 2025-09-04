@@ -30,7 +30,4 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
     // 특정 사용자가 작성한 모든 꿀팁의 총 즐겨찾기 수를 계산하는 메서드 추가
     long countByTip_User_No(Long userNo);
-
-    // (선택) 즐겨찾기 삭제 시 유용
-    void deleteByUser_NoAndTip_No(Long userNo, Long tipNo);
 }

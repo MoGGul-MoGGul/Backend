@@ -11,11 +11,6 @@ import java.util.Optional;
 
 public interface TipRepository extends JpaRepository<Tip, Long> {
 
-    /* ====== 기본 조회 (등록 여부 무관 - 기존 코드 유지) ====== */
-    List<Tip> findAllByIsPublicTrueOrderByCreatedAtDesc();
-    List<Tip> findAllByUser_NoOrderByCreatedAtDesc(Long userNo);
-
-
     /* ====== 등록된 팁 조회 (StorageTip과 연결된 팁 - TipQueryService에서 사용) ====== */
 
     // 전체 공개 & 등록된 팁 조회
@@ -61,17 +56,6 @@ public interface TipRepository extends JpaRepository<Tip, Long> {
            ORDER  BY t.createdAt DESC
            """)
     List<Tip> findTipsByUserStorage(@Param("userId") Long userId);
-
-    /* ====== 태그 (등록된 팁만) ====== */
-    @Query("""
-           SELECT t
-           FROM   Tip t
-           JOIN   t.tipTags tt
-           JOIN   tt.tag tag
-           WHERE  tag.name = :tagName
-           ORDER  BY t.createdAt DESC
-           """)
-    List<Tip> findTipsByTagName(@Param("tagName") String tagName);
 
     /* ====== 특정 보관함(ID) (등록된 팁만) ====== */
     @Query("""

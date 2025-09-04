@@ -1,6 +1,6 @@
 package com.momo.momo_backend.controller;
 
-import com.momo.momo_backend.dto.FollowerResponse;
+import com.momo.momo_backend.dto.FollowResponse;
 import com.momo.momo_backend.dto.FollowingResponse;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.service.FollowQueryService;
@@ -23,12 +23,12 @@ public class FollowQueryController {
 
     // 특정 사용자의 팔로워 목록 조회
     @GetMapping("/{userNo}/followers")
-    public ResponseEntity<List<FollowerResponse>> getFollowers(
+    public ResponseEntity<List<FollowResponse>> getFollowers(
             @PathVariable Long userNo,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         // userNo: 조회하고 싶은 대상의 ID
         // userDetails: 로그인한 '나'의 정보 (isFollowing 계산용)
-        List<FollowerResponse> followers = followQueryService.getFollowers(userNo, userDetails.getUser().getNo());
+        List<FollowResponse> followers = followQueryService.getFollowers(userNo, userDetails.getUser().getNo());
         return ResponseEntity.ok(followers);
     }
 

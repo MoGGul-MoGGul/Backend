@@ -10,7 +10,6 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TipAutoCreateRequest {
-    private Long storageId;
     private String url;
     private Long storageNo; // 꿀팁을 저장할 보관함 ID
 }

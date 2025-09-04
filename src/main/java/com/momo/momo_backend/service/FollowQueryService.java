@@ -1,6 +1,6 @@
 package com.momo.momo_backend.service;
 
-import com.momo.momo_backend.dto.FollowerResponse;
+import com.momo.momo_backend.dto.FollowResponse;
 import com.momo.momo_backend.dto.FollowingResponse;
 import com.momo.momo_backend.entity.User;
 import com.momo.momo_backend.repository.FollowRepository;
@@ -22,7 +22,7 @@ public class FollowQueryService {
 
     // 나를 팔로우하는 사용자 목록(팔로워) 조회
         // userNo: 조회 대상, myUserNo: 로그인한 사용자
-    public List<FollowerResponse> getFollowers(Long userNo, Long myUserNo) {
+    public List<FollowResponse> getFollowers(Long userNo, Long myUserNo) {
         if (!userRepository.existsById(userNo)) {
             throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
         }
@@ -31,7 +31,7 @@ public class FollowQueryService {
                 .map(follower -> {
                     Boolean isFollowing = follower.getNo().equals(myUserNo) ? null :
                             followRepository.existsByFollower_NoAndFollowing_No(myUserNo, follower.getNo());
-                    return FollowerResponse.from(follower, isFollowing);
+                    return FollowResponse.from(follower, isFollowing);
                 })
                 .collect(Collectors.toList());
     }

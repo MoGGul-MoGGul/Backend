@@ -165,12 +165,57 @@ API 제공, AI 연동 및 꿀팁 생성, 소셜 기능 처리, 핵심 데이터 
 - 북마크: `/api/bookmark` (추가, 삭제, 랭킹 조회)
 - 프로필: `/api/profile` (조회, 수정)
   <br/>
-  더 자세한 API 명세는 [API 명세서 링크](https://www.notion.so/API-22a8aa8cd09580ee904ae7c9479372f8?source=copy_link)를 참고하세요.
+  더 자세한 API 명세는 [API 명세서 링크](https://www.notion.so/API-2648aa8cd0958140a4e4f5d59a636846?source=copy_link)를 참고하세요.
+
+---
+
+## AI 파이프라인 핵심 흐름
+
+**생성 요청 (클→백)**
+```http
+POST /api/tips/generate
+Content-Type: application/json
+
+{ "url": "https://example.com/post/123" }
+```
+
+**비동기 작업 (백→AI)**
+```http
+POST {AI_SERVER}/async-index
+```
+```json
+{ "task_id": "abcd-efgh-1234" }
+```
+
+**폴링 (백→AI) — 예: 최대 30회/2초 간격**
+```http
+GET {AI_SERVER}/task-status/{task_id}
+```
+**완료**
+```json
+{ "status": "done", "result": { "title": "…", "summary": "…", "tags": ["…"], "thumbnail": "…" } }
+```
+**대기**
+```json
+{ "status": "pending" }
+```
+
+**최종 등록 (클→백)**
+```http
+POST /api/tips/register
+```
+- 반영: `title/summary/tags/thumbnail`
+- 후속: 알림 전송 · 피드 발행
+
+**등록 규칙**
+- 태그: 중복 제거 후 없으면 생성(연결: TipTag)
+- 보관함: 없으면 생성/연결(StorageTip)
+- (선택) URL 중복 방지/머지 정책 운영
 
 ---
 
 ## 프로젝트 URL
-- **Main** : https://github.com/MoGGulMoGGul
-- **FrontEnd** : https://github.com/MoGGulMoGGul/Frontend
-- **BackEnd** : https://github.com/MoGGulMoGGul/Backend
-- **AI** : https://github.com/MoGGulMoGGul/AI/tree/main
+- **Main** : https://github.com/MoGGul-MoGGul
+- **FrontEnd** : https://github.com/MoGGul-MoGGul/Frontend
+- **BackEnd** : https://github.com/MoGGul-MoGGul/Backend
+- **AI** : https://github.com/MoGGul-MoGGul/AI

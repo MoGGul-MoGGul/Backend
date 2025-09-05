@@ -122,8 +122,6 @@ API 제공, AI 연동 및 꿀팁 생성, 소셜 기능 처리, 핵심 데이터 
 
    #### AWS S3 설정
       ```
-      cloud.aws.credentials.access-key=<AWS_ACCESS_KEY>
-      cloud.aws.credentials.secret-key=<AWS_SECRET_KEY>
       cloud.aws.s3.bucket=<S3_BUCKET_NAME>
       cloud.aws.region.static=ap-northeast-2
       cloud.aws.stack.auto=false

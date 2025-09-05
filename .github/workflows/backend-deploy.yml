@@ -57,20 +57,6 @@ jobs:
           # 두 개의 JAR 파일 중 '-plain'이 없는 실행 가능한 JAR 파일만 골라서 이름을 변경합니다.
           mv $(ls build/libs/*.jar | grep -v plain) build/libs/app.jar
 
-      - name: Stop existing server on EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            bash -ic "
-              echo '--- Attempting to stop any running server ---'
-              # Stop the process. || true ensures this step doesn't fail if the process isn't running.
-              pkill -f 'app.jar' || true
-              echo '--- Stop command sent ---'
-            "
-
       - name: Clean deployment directory on EC2
         uses: appleboy/ssh-action@master
         with:
@@ -107,16 +93,12 @@ jobs:
               ls -l /home/ubuntu/app/backend
             "
 
-      - name: Start server on EC2
+      - name: Restart server with systemctl
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            bash -ic "
-              echo '--- Starting new process on EC2 ---'
-              cd /home/ubuntu/app/backend
-              nohup java -jar app.jar > backend.log 2>&1 &
-              echo '--- Server start command executed ---'
-            "
+            sudo systemctl restart momo-backend.service
+            echo '--- Server restart command executed ---'

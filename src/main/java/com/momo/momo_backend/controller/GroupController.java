@@ -1,13 +1,15 @@
 package com.momo.momo_backend.controller;
 
-import com.momo.momo_backend.dto.*;
+import com.momo.momo_backend.dto.ErrorResponse;
+import com.momo.momo_backend.dto.GroupDto;
+import com.momo.momo_backend.dto.MessageResponse;
 import com.momo.momo_backend.entity.Group;
 import com.momo.momo_backend.entity.User;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.service.GroupService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j; // Slf4j 임포트
-import org.springframework.http.HttpStatus; // HttpStatus 임포트
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,9 +19,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/groups") // 그룹 관련 API의 기본 경로
+@RequestMapping("/api/groups")
 @RequiredArgsConstructor
-@Slf4j // 로그 사용을 위해 추가
+@Slf4j
 public class GroupController {
 
     private final GroupService groupService;
@@ -27,14 +29,14 @@ public class GroupController {
     // 그룹 생성 API
     @PostMapping
     public ResponseEntity<?> createGroup(
-            @RequestBody GroupCreateRequest request,
+            @RequestBody GroupDto.Request request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("그룹 생성 요청 - 그룹명: {}, 사용자: {}", request.getName(), userDetails.getUsername());
         try {
             Long userNo = userDetails.getUser().getNo(); // 현재 로그인한 사용자 번호
             Group createdGroup = groupService.createGroup(request, userNo);
 
-            GroupCreateResponse response = GroupCreateResponse.builder()
+            GroupDto.CreateResponse response = GroupDto.CreateResponse.builder()
                     .message("그룹 생성 완료!")
                     .groupNo(createdGroup.getNo())
                     .build();
@@ -64,7 +66,7 @@ public class GroupController {
     @PostMapping("/{groupNo}/invite")
     public ResponseEntity<?> inviteGroupMember(
             @PathVariable Long groupNo,
-            @RequestBody GroupInviteRequest request, // userLoginIds 목록을 받음
+            @RequestBody GroupDto.InviteRequest request, // userLoginIds 목록을 받음
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("그룹 멤버 초대 요청 - 그룹 ID: {}, 초대할 사용자 아이디 목록: {}, 초대하는 사용자: {}",
                 groupNo, request.getUserLoginIds(), userDetails.getUsername());
@@ -101,7 +103,7 @@ public class GroupController {
     }
 
     // 그룹 멤버 나가기 API
-    @DeleteMapping("/{groupNo}/leave") // 엔드포인트: /api/groups/{groupId}/leave
+    @DeleteMapping("/{groupNo}/leave")
     public ResponseEntity<?> leaveGroup(
             @PathVariable Long groupNo,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -145,8 +147,8 @@ public class GroupController {
             Long requestingUserNo = userDetails.getUser().getNo(); // 요청하는 사용자 번호
             List<User> members = groupService.getGroupMembers(groupNo, requestingUserNo);
 
-            List<GroupMemberResponse> responseList = members.stream()
-                    .map(GroupMemberResponse::from)
+            List<GroupDto.MemberResponse> responseList = members.stream()
+                    .map(GroupDto.MemberResponse::from)
                     .collect(Collectors.toList());
 
             log.info("그룹 멤버 조회 성공 - 그룹 ID: {}, 조회된 멤버 수: {}", groupNo, responseList.size());
@@ -179,13 +181,13 @@ public class GroupController {
     }
 
     // 그룹 목록 조회 API (사용자가 속한 그룹)
-    @GetMapping("/check") // 엔드포인트: /api/groups/check
+    @GetMapping("/check")
     public ResponseEntity<?> getGroupsForUser(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("그룹 목록 조회 요청 - 사용자: {}", userDetails.getUsername());
         try {
             Long userNo = userDetails.getUser().getNo();
-            List<GroupListResponse> responseList = groupService.getGroupsForUser(userNo);
+            List<GroupDto.ListResponse> responseList = groupService.getGroupsForUser(userNo);
 
             log.info("그룹 목록 조회 성공 - 사용자: {}, 조회된 그룹 수: {}", userNo, responseList.size());
             return ResponseEntity.ok(responseList); // 200 OK 응답
@@ -209,10 +211,10 @@ public class GroupController {
     }
 
     // 그룹명 수정 API
-    @PutMapping("/{groupNo}/name") // 엔드포인트: /api/groups/{groupId}/name
+    @PutMapping("/{groupNo}/name")
     public ResponseEntity<?> updateGroupName(
             @PathVariable Long groupNo,
-            @RequestBody GroupUpdateRequest request,
+            @RequestBody GroupDto.Request request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("그룹명 수정 요청 - 그룹 ID: {}, 새 그룹명: {}, 요청 사용자: {}",
                 groupNo, request.getName(), userDetails.getUsername());

@@ -1,7 +1,6 @@
 package com.momo.momo_backend.service;
 
-import com.momo.momo_backend.dto.StorageCreateRequest;
-import com.momo.momo_backend.dto.StorageUpdateRequest;
+import com.momo.momo_backend.dto.StorageDto;
 import com.momo.momo_backend.entity.Storage;
 import com.momo.momo_backend.entity.User;
 import com.momo.momo_backend.entity.Group;
@@ -26,7 +25,7 @@ public class StorageService {
     private final GroupMemberRepository groupMemberRepository;
 
     // 보관함 생성
-    public Storage create(StorageCreateRequest request, Long loginUserNo) {
+    public Storage create(StorageDto.CreateRequest request, Long loginUserNo) {
         User user = userRepository.findById(loginUserNo)
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
 
@@ -55,7 +54,7 @@ public class StorageService {
 
     // 보관함 수정
     @Transactional
-    public Storage update(Long storageNo, Long loginUserNo, StorageUpdateRequest request) {
+    public Storage update(Long storageNo, Long loginUserNo, StorageDto.UpdateRequest request) {
         Storage storage = storageRepository.findById(storageNo)
                 .orElseThrow(() -> new IllegalArgumentException("보관함이 존재하지 않습니다."));
 

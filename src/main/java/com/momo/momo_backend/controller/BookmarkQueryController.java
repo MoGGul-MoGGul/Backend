@@ -1,6 +1,6 @@
 package com.momo.momo_backend.controller;
 
-import com.momo.momo_backend.dto.WeeklyRankingResponse;
+import com.momo.momo_backend.dto.TipDto;
 import com.momo.momo_backend.service.BookmarkQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +19,8 @@ public class BookmarkQueryController {
 
     // 주간 북마크 랭킹 조회
     @GetMapping("/ranking/weekly")
-    public ResponseEntity<List<WeeklyRankingResponse>> getWeeklyRanking() {
-        List<WeeklyRankingResponse> ranking = bookmarkQueryService.getWeeklyBookmarkRanking();
+    public ResponseEntity<List<TipDto.WeeklyRankingResponse>> getWeeklyRanking() {
+        List<TipDto.WeeklyRankingResponse> ranking = bookmarkQueryService.getWeeklyBookmarkRanking();
         return ResponseEntity.ok(ranking);
     }
 }

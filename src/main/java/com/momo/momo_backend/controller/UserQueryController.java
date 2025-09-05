@@ -1,6 +1,6 @@
 package com.momo.momo_backend.controller;
 
-import com.momo.momo_backend.dto.UserListResponse;
+import com.momo.momo_backend.dto.FollowDto;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
@@ -22,17 +22,17 @@ public class UserQueryController {
 
     // 모든 사용자 목록 조회
     @GetMapping("/all")
-    public ResponseEntity<List<UserListResponse>> getAllUsers() {
-        List<UserListResponse> users = userQueryService.getAllUsers();
+    public ResponseEntity<List<FollowDto.Response>> getAllUsers() {
+        List<FollowDto.Response> users = userQueryService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
     // 사용자 아이디 검색
     @GetMapping("/search")
-    public ResponseEntity<List<UserListResponse>> searchUsers(
+    public ResponseEntity<List<FollowDto.Response>> searchUsers(
             @RequestParam("id") String loginId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        List<UserListResponse> users = userQueryService.searchUsersByLoginId(loginId, userDetails.getUser().getNo());
+        List<FollowDto.Response> users = userQueryService.searchUsersByLoginId(loginId, userDetails.getUser().getNo());
         return ResponseEntity.ok(users);
     }
 }

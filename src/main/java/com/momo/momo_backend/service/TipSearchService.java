@@ -1,6 +1,6 @@
 package com.momo.momo_backend.service;
 
-import com.momo.momo_backend.dto.TipResponse;
+import com.momo.momo_backend.dto.TipDto;
 import com.momo.momo_backend.entity.*;
 import com.momo.momo_backend.repository.GroupMemberRepository;
 import com.momo.momo_backend.repository.GroupRepository;
@@ -27,8 +27,8 @@ public class TipSearchService {
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
 
-    /* ============================ Public ============================ */
-    public List<TipResponse> searchPublic(String keyword, String mode, int page, int size) {
+    // 전체 꿀팁 검색(public 꿀팁만)
+    public List<TipDto.DetailResponse> searchPublic(String keyword, String mode, int page, int size) {
         String base = """
             SELECT DISTINCT t
             FROM Tip t
@@ -42,8 +42,8 @@ public class TipSearchService {
         return queryTips(jpql, params, page, size);
     }
 
-    /* ============================ My (user-wide) ============================ */
-    public List<TipResponse> searchMy(Long userNo, String keyword, String mode, int page, int size) {
+    // 내 꿀팁 검색
+    public List<TipDto.DetailResponse> searchMy(Long userNo, String keyword, String mode, int page, int size) {
         String base = """
             SELECT DISTINCT t
             FROM Tip t
@@ -59,9 +59,9 @@ public class TipSearchService {
         return queryTips(jpql, params, page, size);
     }
 
-    /* ============================ Group ============================ */
-    public List<TipResponse> searchGroup(Long groupNo, Long requestingUserNo,
-                                         String keyword, String mode, int page, int size) {
+    // 그룹 꿀팁 검색
+    public List<TipDto.DetailResponse> searchGroup(Long groupNo, Long requestingUserNo,
+                                                   String keyword, String mode, int page, int size) {
 
         Group group = groupRepository.findById(groupNo)
                 .orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));
@@ -87,9 +87,9 @@ public class TipSearchService {
         return queryTips(jpql, params, page, size);
     }
 
-    /* ============================ Storage ============================ */
-    public List<TipResponse> searchStorage(Long storageNo, Long requestingUserNo,
-                                           String keyword, String mode, int page, int size) {
+    // 보관함 꿀팁 검색
+    public List<TipDto.DetailResponse> searchStorage(Long storageNo, Long requestingUserNo,
+                                                     String keyword, String mode, int page, int size) {
 
         Storage storage = storageRepository.findById(storageNo)
                 .orElseThrow(() -> new IllegalArgumentException("보관함이 존재하지 않습니다."));
@@ -120,28 +120,8 @@ public class TipSearchService {
         return queryTips(jpql, params, page, size);
     }
 
-    /* ============================ Tag ============================ */
-    public List<TipResponse> searchByTag(String tagName, String keyword, String mode, int page, int size) {
-        String base = """
-            SELECT DISTINCT t
-            FROM Tip t
-              JOIN t.storageTips st
-              JOIN t.tipTags tt
-              JOIN tt.tag tag
-              JOIN FETCH t.user u
-            WHERE tag.name = :tagName
-              AND t.isPublic = true
-        """;
-        var params = new HashMap<String, Object>();
-        params.put("tagName", tagName);
-        String jpql = appendKeywordClause(base, "t", keyword, mode, params)
-                + " ORDER BY t.createdAt DESC";
-        return queryTips(jpql, params, page, size);
-    }
-
-    /* ============================ 내부 유틸 ============================ */
-
-    private List<TipResponse> queryTips(String jpql, Map<String, Object> params, int page, int size) {
+    // 공통 조회 메서드
+    private List<TipDto.DetailResponse> queryTips(String jpql, Map<String, Object> params, int page, int size) {
         var q = em.createQuery(jpql, Tip.class);
         params.forEach(q::setParameter);
         if (page >= 0 && size > 0) {
@@ -150,15 +130,11 @@ public class TipSearchService {
         }
         List<Tip> tips = q.getResultList();
         return tips.stream()
-                .map(TipResponse::from)
+                .map(TipDto.DetailResponse::from)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * keyword를 공백으로 분리해 OR / AND 로 묶어 JPQL에 추가.
-     * - LOWER(COALESCE(field,'')) LIKE :wX ESCAPE '\\'
-     * - %/_를 이스케이프 처리하여 오동작 방지
-     */
+    // 키워드 조건절 추가
     private String appendKeywordClause(String base, String alias,
                                        String keyword, String mode,
                                        Map<String, Object> params) {
@@ -187,6 +163,7 @@ public class TipSearchService {
         return sb.toString();
     }
 
+    // LIKE 검색용 파라미터 변환 (소문자, 앞뒤 % 추가, 특수문자 이스케이프)
     private String toLikeParam(String raw) {
         String escaped = raw.toLowerCase()
                 .replace("\\", "\\\\")

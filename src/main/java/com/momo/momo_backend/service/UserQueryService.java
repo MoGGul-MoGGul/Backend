@@ -1,6 +1,6 @@
 package com.momo.momo_backend.service;
 
-import com.momo.momo_backend.dto.UserListResponse;
+import com.momo.momo_backend.dto.FollowDto;
 import com.momo.momo_backend.entity.User;
 import com.momo.momo_backend.repository.FollowRepository;
 import com.momo.momo_backend.repository.UserRepository;
@@ -21,10 +21,10 @@ public class UserQueryService {
     private final FollowRepository followRepository;
 
     // 모든 사용자 조회
-    public List<UserListResponse> getAllUsers() {
+    public List<FollowDto.Response> getAllUsers() {
         List<User> users = userRepository.findAll();
         return users.stream()
-                .map(user -> UserListResponse.builder()
+                .map(user -> FollowDto.Response.builder()
                         .userNo(user.getNo())
                         .nickname(user.getNickname())
                         .profileImageUrl(user.getProfileImage())
@@ -33,7 +33,7 @@ public class UserQueryService {
     }
 
     // 사용자 아이디로 검색
-    public List<UserListResponse> searchUsersByLoginId(String loginId, Long myUserNo) {
+    public List<FollowDto.Response> searchUsersByLoginId(String loginId, Long myUserNo) {
         if (loginId == null || loginId.isBlank()) {
             return Collections.emptyList();
         }
@@ -42,7 +42,7 @@ public class UserQueryService {
                 .map(user -> {
                     Boolean isFollowing = user.getNo().equals(myUserNo) ? null :
                             followRepository.existsByFollower_NoAndFollowing_No(myUserNo, user.getNo());
-                    return UserListResponse.from(user, isFollowing);
+                    return FollowDto.Response.from(user, isFollowing);
                 })
                 .collect(Collectors.toList());
     }

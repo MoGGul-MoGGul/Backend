@@ -1,9 +1,6 @@
 package com.momo.momo_backend.service;
 
-import com.momo.momo_backend.dto.GroupCreateRequest;
-import com.momo.momo_backend.dto.GroupInviteRequest;
-import com.momo.momo_backend.dto.GroupListResponse;
-import com.momo.momo_backend.dto.GroupUpdateRequest;
+import com.momo.momo_backend.dto.GroupDto;
 import com.momo.momo_backend.entity.Group;
 import com.momo.momo_backend.entity.GroupMember; // GroupMember 임포트
 import com.momo.momo_backend.entity.User; // User 임포트
@@ -31,7 +28,7 @@ public class GroupService {
 
     // 그룹 생성
     @Transactional // 트랜잭션 관리
-    public Group createGroup(GroupCreateRequest request, Long userNo) {
+    public Group createGroup(GroupDto.Request request, Long userNo) {
         // 1. 그룹 이름 중복 확인 (선택 사항이지만, 실제 서비스에서는 고려할 수 있음)
         // if (groupRepository.findByName(request.getName()).isPresent()) {
         //     throw new IllegalArgumentException("이미 존재하는 그룹 이름입니다.");
@@ -59,7 +56,7 @@ public class GroupService {
 
     // 그룹에 사용자 초대
     @Transactional
-    public List<String> inviteMembers(Long groupNo, GroupInviteRequest request, Long inviterUserNo) {
+    public List<String> inviteMembers(Long groupNo, GroupDto.InviteRequest request, Long inviterUserNo) {
         // 1. 그룹 존재 여부 확인
         Group group = groupRepository.findById(groupNo)
                 .orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));
@@ -148,7 +145,7 @@ public class GroupService {
 
     // 그룹 목록 조회 (사용자가 속한 그룹)
     @Transactional(readOnly = true)
-    public List<GroupListResponse> getGroupsForUser(Long userNo) {
+    public List<GroupDto.ListResponse> getGroupsForUser(Long userNo) {
         // 1. 사용자 존재 여부 확인 (인증된 사용자이므로 보통 발생하지 않음)
 
         // 2. 해당 사용자가 속한 모든 GroupMember 엔티티 조회
@@ -158,8 +155,8 @@ public class GroupService {
         return groupMemberships.stream()
                 .map(groupMember -> {
                     Group group = groupMember.getGroup();
-                    int memberCount = groupMemberRepository.countByGroup(group); // 해당 그룹의 멤버 수 계산
-                    return GroupListResponse.builder()
+                    int memberCount = groupMemberRepository.countByGroup(group);
+                    return GroupDto.ListResponse.builder()
                             .groupNo(group.getNo())
                             .name(group.getName())
                             .memberCount(memberCount)
@@ -170,7 +167,7 @@ public class GroupService {
 
     // 그룹명 수정
     @Transactional
-    public Group updateGroupName(Long groupNo, GroupUpdateRequest request, Long requestingUserNo) {
+    public Group updateGroupName(Long groupNo, GroupDto.Request request, Long requestingUserNo) {
         // 1. 그룹 존재 여부 확인
         Group group = groupRepository.findById(groupNo)
                 .orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));

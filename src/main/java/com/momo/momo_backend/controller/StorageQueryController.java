@@ -1,8 +1,8 @@
 package com.momo.momo_backend.controller;
 
-import com.momo.momo_backend.dto.GroupStorageResponse;
-import com.momo.momo_backend.dto.StorageNameResponse; // 새로 추가된 DTO 임포트
-import com.momo.momo_backend.dto.ErrorResponse; // ErrorResponse DTO 임포트
+import com.momo.momo_backend.dto.GroupDto;
+import com.momo.momo_backend.dto.StorageDto;
+import com.momo.momo_backend.dto.ErrorResponse;
 import com.momo.momo_backend.entity.Storage;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.service.StorageQueryService;
@@ -11,11 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus; // HttpStatus 임포트
-import lombok.extern.slf4j.Slf4j; // Slf4j 임포트
+import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.stream.Collectors; // Collectors 임포트
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/query/storage")
@@ -33,11 +33,11 @@ public class StorageQueryController {
             List<Storage> storages = storageQueryService.findByUser(userNo);
 
             // StorageNameResponse DTO 리스트로 변환하며 필드 추가
-            List<StorageNameResponse> responseList = storages.stream()
-                    .map(storage -> StorageNameResponse.builder()
-                            .storageNo(storage.getNo()) // storageNo 추가
+            List<StorageDto.Response> responseList = storages.stream()
+                    .map(storage -> StorageDto.Response.builder()
+                            .storageNo(storage.getNo())
                             .name(storage.getName())
-                            .userNo(storage.getUser().getNo()) // userNo 추가
+                            .userNo(storage.getUser().getNo())
                             .build())
                     .collect(Collectors.toList());
 
@@ -55,7 +55,7 @@ public class StorageQueryController {
     }
 
     // 특정 그룹의 보관함 목록 조회 API
-    @GetMapping("/group/{groupNo}") // 엔드포인트: /api/query/storage/group/{groupId}
+    @GetMapping("/group/{groupNo}")
     public ResponseEntity<?> getGroupStorages(
             @PathVariable Long groupNo,
             @AuthenticationPrincipal CustomUserDetails userDetails) { // 인증된 사용자 정보 필요
@@ -65,8 +65,8 @@ public class StorageQueryController {
             List<Storage> groupStorages = storageQueryService.findGroupStoragesByGroup(groupNo, requestingUserNo);
 
             // Storage 엔티티 리스트를 GroupStorageResponse DTO 리스트로 변환
-            List<GroupStorageResponse> responseList = groupStorages.stream()
-                    .map(GroupStorageResponse::from)
+            List<GroupDto.StorageResponse> responseList = groupStorages.stream()
+                    .map(GroupDto.StorageResponse::from)
                     .collect(Collectors.toList());
 
             log.info("그룹 보관함 목록 조회 성공 - 그룹 ID: {}, 조회된 보관함 수: {}", groupNo, responseList.size());
@@ -108,8 +108,8 @@ public class StorageQueryController {
 
             List<Storage> storages = storageQueryService.findStoragesForUserGroups(userNo);
 
-            List<GroupStorageResponse> responseList = storages.stream()
-                    .map(GroupStorageResponse::from)
+            List<GroupDto.StorageResponse> responseList = storages.stream()
+                    .map(GroupDto.StorageResponse::from)
                     .collect(Collectors.toList());
 
             log.info("사용자 그룹 보관함 목록 조회 성공 - 사용자: {}, 조회된 보관함 수: {}", userNo, responseList.size());

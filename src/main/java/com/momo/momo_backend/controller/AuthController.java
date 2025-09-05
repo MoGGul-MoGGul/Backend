@@ -1,9 +1,7 @@
 package com.momo.momo_backend.controller;
 
 import com.momo.momo_backend.dto.ErrorResponse;
-import com.momo.momo_backend.dto.LoginRequest;
-import com.momo.momo_backend.dto.LoginResponse;
-import com.momo.momo_backend.dto.SignupRequest;
+import com.momo.momo_backend.dto.AuthDto;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.security.JwtTokenProvider;
 import com.momo.momo_backend.service.AuthService;
@@ -28,21 +26,23 @@ public class AuthController {
     public record ResetPwRequest(String id, String nickname, String newPassword) {}
     public record FindIdRequest(String nickname, String password) {}
 
+    // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<Void> signup(@RequestBody AuthDto.SignupRequest request) {
         authService.signup(request);
         return ResponseEntity.ok().build();
     }
 
+    // 로그인
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request,
-                                               HttpServletResponse response) {
-        LoginResponse body = authService.login(request);
+    public ResponseEntity<AuthDto.LoginResponse> login(@RequestBody AuthDto.LoginRequest request,
+                                                       HttpServletResponse response) {
+        AuthDto.LoginResponse body = authService.login(request);
 
         // Refresh 토큰을 HttpOnly 쿠키로 심어줌
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", body.getRefreshToken())
                 .httpOnly(true)
-                .secure(true)          // 로컬 http면 false 로 바꿔도 됨
+                .secure(true)          // 로컬 http 일 경우 false 로 바꿔도 됨
                 .path("/")             // 필요하면 /api/auth 로 좁힐 수 있음
                 .sameSite("None")      // 프론트가 다른 포트/도메인이면 None 권장
                 .maxAge(60L * 60 * 24 * 14) // 예시 14일; JWT 만료와 맞추면 좋음
@@ -53,6 +53,7 @@ public class AuthController {
                 .body(body);
     }
 
+    // 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorizationHeader,
                                        HttpServletResponse response) {
@@ -72,7 +73,7 @@ public class AuthController {
                 .build();
     }
 
-    /** 리프레시 토큰으로 새 토큰 발급 */
+    // 토큰 재발급
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(HttpServletRequest request,
                                      HttpServletResponse response) {
@@ -101,7 +102,7 @@ public class AuthController {
         }
 
         try {
-            LoginResponse newTokens = authService.refresh(refreshToken);
+            AuthDto.LoginResponse newTokens = authService.refresh(refreshToken);
 
             // 새 RT로 쿠키 갱신
             ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newTokens.getRefreshToken())
@@ -125,28 +126,32 @@ public class AuthController {
         }
     }
 
+    // 아이디 중복 체크
     @GetMapping("/check-id")
     public ResponseEntity<Boolean> checkId(@RequestParam String id) {
         return ResponseEntity.ok(authService.checkIdExists(id));
     }
 
+    // 닉네임 중복 체크
     @GetMapping("/check-nickname")
     public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname) {
         return ResponseEntity.ok(authService.checkNicknameExists(nickname));
     }
 
-    /** 회원탈퇴 */
+    // 회원탈퇴
     @DeleteMapping("/withdrawal")
     public ResponseEntity<Void> withdrawal(@AuthenticationPrincipal CustomUserDetails principal) {
         authService.withdraw(principal.getUser().getNo());
         return ResponseEntity.noContent().build();
     }
 
+    // 아이디 찾기
     @PostMapping("/find-id")
     public ResponseEntity<String> findId(@RequestBody FindIdRequest req) {
         return ResponseEntity.ok(authService.findId(req.nickname(), req.password()));
     }
 
+    // 비밀번호 재설정
     @PostMapping("/reset-pw")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPwRequest req) {
         try {

@@ -33,8 +33,6 @@ jobs:
           echo "jwt.secret=${{ secrets.JWT_SECRET_KEY }}" >> $PROPERTIES_PATH
           echo "spring.data.redis.host=${{ secrets.REDIS_HOST }}" >> $PROPERTIES_PATH
           echo "spring.data.redis.port=${{ secrets.REDIS_PORT }}" >> $PROPERTIES_PATH
-          echo "cloud.aws.credentials.access-key=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $PROPERTIES_PATH
-          echo "cloud.aws.credentials.secret-key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $PROPERTIES_PATH
           echo "cloud.aws.s3.bucket=${{ secrets.AWS_S3_BUCKET_NAME }}" >> $PROPERTIES_PATH
           echo "cloud.aws.region.static=ap-northeast-2" >> $PROPERTIES_PATH
           echo "cloud.aws.stack.auto=false" >> $PROPERTIES_PATH

@@ -2,17 +2,17 @@ package com.momo.momo_backend.controller;
 
 import com.momo.momo_backend.dto.ErrorResponse;
 import com.momo.momo_backend.entity.Tip;
-import com.momo.momo_backend.dto.TipResponse; // TipResponse DTO 임포트
+import com.momo.momo_backend.dto.TipDto;
 import com.momo.momo_backend.service.TipQueryService;
-import com.momo.momo_backend.security.CustomUserDetails; // CustomUserDetails 임포트
+import com.momo.momo_backend.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal; // AuthenticationPrincipal 임포트
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors; // Collectors 임포트
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/query/tips")
@@ -23,43 +23,41 @@ public class TipQueryController {
 
     // 사용자가 작성한 팁 조회 (등록된 팁만) - 토큰 필요
     @GetMapping("/my")
-    public ResponseEntity<List<TipResponse>> getMyTips(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUser().getNo(); // 로그인된 사용자의 ID를 토큰에서 가져옴
+    public ResponseEntity<List<TipDto.DetailResponse>> getMyTips(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getNo();
         List<Tip> tips = tipQueryService.getTipsByUser(userId);
-        List<TipResponse> responseList = tips.stream()
-                .map(TipResponse::from)
+        List<TipDto.DetailResponse> responseList = tips.stream()
+                .map(TipDto.DetailResponse::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responseList);
     }
 
-    // 공개된 팁 목록 조회 (등록된 팁만) - 토큰 불필요 (SecurityConfig에서 permitAll)
+    // 공개된 팁 목록 조회 (등록된 팁만) - 토큰 불필요
     @GetMapping("/all")
-    public ResponseEntity<List<TipResponse>> getAllPublicTips() {
+    public ResponseEntity<List<TipDto.DetailResponse>> getAllPublicTips() {
         List<Tip> tips = tipQueryService.getAllPublicTips();
-        List<TipResponse> responseList = tips.stream()
-                .map(TipResponse::from)
+        List<TipDto.DetailResponse> responseList = tips.stream()
+                .map(TipDto.DetailResponse::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responseList);
     }
 
     // 특정 보관함에 속한 팁 조회 (등록된 팁만) - 토큰 필요
     @GetMapping("/storage/{storageNo}")
-    public ResponseEntity<List<TipResponse>> getTipsByStorage(@PathVariable Long storageNo,
-                                                              @AuthenticationPrincipal CustomUserDetails userDetails) {
-        // 이 메서드는 @AuthenticationPrincipal을 통해 인증된 사용자만 접근 가능합니다.
-        // 추가적인 비즈니스 로직 검증은 TipQueryService에서 수행될 수 있습니다.
+    public ResponseEntity<List<TipDto.DetailResponse>> getTipsByStorage(@PathVariable Long storageNo,
+                                                                        @AuthenticationPrincipal CustomUserDetails userDetails) {
         List<Tip> tips = tipQueryService.getTipsByStorage(storageNo);
-        List<TipResponse> responseList = tips.stream()
-                .map(TipResponse::from)
+        List<TipDto.DetailResponse> responseList = tips.stream()
+                .map(TipDto.DetailResponse::from)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responseList);
     }
 
-    // 상세 팁 조회 - 토큰 불필요 (SecurityConfig에서 permitAll)
+    // 상세 팁 조회 - 토큰 불필요
     @GetMapping("/{tipNo}")
-    public ResponseEntity<TipResponse> getTipDetails(@PathVariable Long tipNo) {
+    public ResponseEntity<TipDto.DetailResponse> getTipDetails(@PathVariable Long tipNo) {
         Tip tip = tipQueryService.getTipDetails(tipNo);
-        TipResponse response = TipResponse.from(tip);
+        TipDto.DetailResponse response = TipDto.DetailResponse.from(tip);
         return ResponseEntity.ok(response);
     }
 
@@ -68,8 +66,8 @@ public class TipQueryController {
     public ResponseEntity<?> getPublicTipsByUser(@PathVariable Long userNo) {
         try {
             List<Tip> tips = tipQueryService.getPublicTipsByUser(userNo);
-            List<TipResponse> responseList = tips.stream()
-                    .map(TipResponse::from)
+            List<TipDto.DetailResponse> responseList = tips.stream()
+                    .map(TipDto.DetailResponse::from)
                     .collect(Collectors.toList());
             return ResponseEntity.ok(responseList);
         } catch (IllegalArgumentException e) {

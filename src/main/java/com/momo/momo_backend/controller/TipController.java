@@ -1,6 +1,8 @@
 package com.momo.momo_backend.controller;
 
-import com.momo.momo_backend.dto.*;
+import com.momo.momo_backend.dto.ErrorResponse;
+import com.momo.momo_backend.dto.MessageResponse;
+import com.momo.momo_backend.dto.TipDto;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.service.TipService;
 import jakarta.validation.Valid;
@@ -22,15 +24,15 @@ public class TipController {
 
     // 꿀팁 생성 (AI 정보 미리보기)
     @PostMapping("/generate")
-    public ResponseEntity<TipCreateResponse> createTip(
-            @RequestBody TipCreateRequest request,
+    public ResponseEntity<TipDto.CreateResponse> createTip(
+            @RequestBody TipDto.CreateRequest request,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
         String who = (user != null) ? user.getUsername() : "anonymous";
         log.info("꿀팁 생성 요청 by={}, url={}, title(pre):{}, tags(pre):{}",
                 who, request.getUrl(), request.getTitle(), request.getTags());
         try {
-            TipCreateResponse response = tipService.createTip(request);
+            TipDto.CreateResponse response = tipService.createTip(request);
             log.info("꿀팁 생성 미리보기 완료 title={}, tags={}", response.getTitle(), response.getTags());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -41,8 +43,8 @@ public class TipController {
 
     // 꿀팁 등록(저장)
     @PostMapping("/register")
-    public ResponseEntity<TipRegisterResponse> registerTip(
-            @RequestBody @Valid TipRegisterRequest request,
+    public ResponseEntity<TipDto.DetailResponse> registerTip(
+            @RequestBody @Valid TipDto.RegisterRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Long userNo = userDetails.getUser().getNo();
@@ -52,17 +54,17 @@ public class TipController {
                 userNo, request.getStorageNo(), request.getIsPublic(),
                 request.getUrl(), request.getTitle(), request.getTags());
 
-    TipRegisterResponse response = tipService.registerTip(request, userNo);
+        TipDto.DetailResponse response = tipService.registerTip(request, userNo);
         log.info("꿀팁 등록 완료: tipNo={}, storageNo={}, public={}, title={}",
-                response.getTipNo(), response.getStorageNo(), response.getIsPublic(), response.getTitle());
+                response.getNo(), response.getStorageNo(), response.getIsPublic(), response.getTitle());
         return ResponseEntity.ok(response);
 }
 
     // 꿀팁 수정
     @PutMapping("/{no}")
-    public ResponseEntity<TipResponse> update(
+    public ResponseEntity<TipDto.DetailResponse> update(
             @PathVariable Long no,
-            @Valid @RequestBody TipUpdateRequest request,
+            @Valid @RequestBody TipDto.UpdateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         Long userNo = userDetails.getUser().getNo();

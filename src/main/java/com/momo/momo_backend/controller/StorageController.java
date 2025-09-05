@@ -1,6 +1,8 @@
 package com.momo.momo_backend.controller;
 
-import com.momo.momo_backend.dto.*;
+import com.momo.momo_backend.dto.ErrorResponse;
+import com.momo.momo_backend.dto.MessageResponse;
+import com.momo.momo_backend.dto.StorageDto;
 import com.momo.momo_backend.entity.Storage;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.service.StorageService;
@@ -23,17 +25,18 @@ public class StorageController {
 
     // 보관함 생성
     @PostMapping
-    public ResponseEntity<StorageCreateResponse> create(
-            @RequestBody StorageCreateRequest request,
+    public ResponseEntity<StorageDto.Response> create(
+            @RequestBody StorageDto.CreateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         // 로그인한 사용자의 정보를 사용
         Long loginUserNo = userDetails.getUser().getNo();
         Storage created = storageService.create(request, loginUserNo);
 
-        StorageCreateResponse response = StorageCreateResponse.builder()
-                .message("보관함 생성 완료!!")
+        StorageDto.Response response = StorageDto.Response.builder()
                 .storageNo(created.getNo())
+                .name(created.getName())
+                .userNo(created.getUser().getNo())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -43,7 +46,7 @@ public class StorageController {
     @PutMapping("/{storageNo}")
     public ResponseEntity<?> updateStorage( // 반환 타입을 와일드카드로 변경하여 ErrorResponse도 반환 가능하게 함
         @PathVariable Long storageNo,
-        @RequestBody StorageUpdateRequest request,
+        @RequestBody StorageDto.UpdateRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("보관함 수정 요청 - storageNo: {}, 사용자: {}, 권한: {}",
                 storageNo,
@@ -54,9 +57,10 @@ public class StorageController {
             Storage updatedStorage = storageService.update(storageNo, loginUserNo, request);
             log.info("보관함 수정 성공");
 
-            StorageUpdateResponse response = StorageUpdateResponse.builder()
+            StorageDto.Response response = StorageDto.Response.builder()
                     .storageNo(updatedStorage.getNo())
                     .name(updatedStorage.getName())
+                    .userNo(updatedStorage.getUser().getNo())
                     .build();
 
             return ResponseEntity.ok(response);

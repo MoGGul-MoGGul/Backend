@@ -1,8 +1,6 @@
 package com.momo.momo_backend.service;
 
-import com.momo.momo_backend.dto.LoginRequest;
-import com.momo.momo_backend.dto.LoginResponse;
-import com.momo.momo_backend.dto.SignupRequest;
+import com.momo.momo_backend.dto.AuthDto;
 import com.momo.momo_backend.entity.User;
 import com.momo.momo_backend.entity.UserCredential;
 import com.momo.momo_backend.repository.UserCredentialRepository;
@@ -33,9 +31,9 @@ public class AuthService {
         return "RT:" + loginId;
     }
 
-    /* ------------------------- 회원가입 ------------------------- */
+    // 회원가입
     @Transactional
-    public void signup(SignupRequest request) {
+    public void signup(AuthDto.SignupRequest request) {
         if (credentialRepository.findByLoginId(request.getId()).isPresent()
                 || userRepository.findByLoginId(request.getId()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
@@ -60,9 +58,9 @@ public class AuthService {
         credentialRepository.save(credential);
     }
 
-    /* -------------------------- 로그인 -------------------------- */
+    // 로그인
     @Transactional // readOnly 제거 (Redis 쓰기 포함)
-    public LoginResponse login(LoginRequest request) {
+    public AuthDto.LoginResponse login(AuthDto.LoginRequest request) {
         UserCredential credential = credentialRepository.findByLoginId(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
@@ -87,16 +85,15 @@ public class AuthService {
         );
         log.debug("[LOGIN] Saved RT to Redis key={}, ttl(ms)={}", key, jwtTokenProvider.getRefreshTokenValidity());
 
-        return LoginResponse.builder()
+        return AuthDto.LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .userNo(userNo)
                 .build();
     }
-
-    /* ------------------------- 토큰 재발급 ------------------------- */
+    // 토큰 재발급
     @Transactional
-    public LoginResponse refresh(String refreshTokenOrBearer) {
+    public AuthDto.LoginResponse refresh(String refreshTokenOrBearer) {
         if (!jwtTokenProvider.validateToken(refreshTokenOrBearer)) {
             throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
@@ -128,14 +125,14 @@ public class AuthService {
         );
         log.debug("[REFRESH] Updated RT in Redis key={}, ttl(ms)={}", key, jwtTokenProvider.getRefreshTokenValidity());
 
-        return LoginResponse.builder()
+        return AuthDto.LoginResponse.builder()
                 .accessToken(newAccess)
                 .refreshToken(newRefresh)
                 .userNo(userNo)
                 .build();
     }
 
-    /* -------------------------- 로그아웃 -------------------------- */
+    // 로그아웃
     @Transactional
     public void logout(String accessHeaderOrToken) {
         String access = jwtTokenProvider.resolveBearer(accessHeaderOrToken);
@@ -154,25 +151,27 @@ public class AuthService {
         }
     }
 
-    /* ------------------------ 중복 체크/탈퇴 ------------------------ */
+    // 아이디 중복 확인
     @Transactional(readOnly = true)
     public boolean checkIdExists(String id) {
         return userRepository.findByLoginId(id).isPresent()
                 || credentialRepository.findByLoginId(id).isPresent();
     }
 
+    // 닉네임 중복 확인
     @Transactional(readOnly = true)
     public boolean checkNicknameExists(String nickname) {
         return userRepository.findByNickname(nickname).isPresent();
     }
 
+    // 회원 탈퇴
     @Transactional
     public void withdraw(Long userNo) {
         credentialRepository.deleteByUser_No(userNo);
         userRepository.deleteById(userNo);
     }
 
-    /* -------------------------- 아이디 찾기 -------------------------- */
+   // 아이디 찾기
     @Transactional(readOnly = true)
     public String findId(String nickname, String password) {
         User user = userRepository.findByNickname(nickname)
@@ -187,7 +186,7 @@ public class AuthService {
         return user.getLoginId();
     }
 
-    /* ------------------------ 비밀번호 재설정 ------------------------ */
+    // 비밀번호 재설정
     @Transactional
     public void resetPassword(String id, String nickname, String newPassword) {
         if (newPassword == null || newPassword.isBlank()) {

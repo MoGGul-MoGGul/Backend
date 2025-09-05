@@ -1,8 +1,8 @@
 package com.momo.momo_backend.service;
 
-import com.momo.momo_backend.dto.ProfileResponse;
+import com.momo.momo_backend.dto.ProfileDto;
 import com.momo.momo_backend.entity.User;
-import com.momo.momo_backend.repository.BookmarkRepository; // BookmarkRepository 임포트
+import com.momo.momo_backend.repository.BookmarkRepository;
 import com.momo.momo_backend.repository.FollowRepository;
 import com.momo.momo_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +16,10 @@ public class ProfileQueryService {
 
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
-    private final BookmarkRepository bookmarkRepository; // 의존성 주입
+    private final BookmarkRepository bookmarkRepository;
 
     // 사용자 프로필 조회
-    public ProfileResponse getUserProfile(Long userNo, Long myUserNo) {
+    public ProfileDto.DetailResponse getUserProfile(Long userNo, Long myUserNo) {
         User user = userRepository.findById(userNo)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -31,6 +31,6 @@ public class ProfileQueryService {
         Boolean isFollowing = userNo.equals(myUserNo) ? null :
                 followRepository.existsByFollower_NoAndFollowing_No(myUserNo, userNo);
 
-        return ProfileResponse.from(user, followerCount, followingCount, totalBookmarkCount, isFollowing);
+        return ProfileDto.DetailResponse.from(user, followerCount, followingCount, totalBookmarkCount, isFollowing);
     }
 }

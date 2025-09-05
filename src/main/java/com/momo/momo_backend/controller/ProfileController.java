@@ -1,6 +1,7 @@
 package com.momo.momo_backend.controller;
 
-import com.momo.momo_backend.dto.*;
+import com.momo.momo_backend.dto.ErrorResponse;
+import com.momo.momo_backend.dto.ProfileDto;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.service.ProfileService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class ProfileController {
 
         try {
             // 서비스 로직 호출 (닉네임과 이미지 파일을 모두 전달)
-            ProfileUpdateResponse response = profileService.updateProfile(userDetails.getUser().getNo(), nickname, imageFile);
+            ProfileDto.UpdateResponse response = profileService.updateProfile(userDetails.getUser().getNo(), nickname, imageFile);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             ErrorResponse errorResponse = ErrorResponse.builder()

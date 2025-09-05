@@ -1,7 +1,6 @@
-// src/main/java/com/momo/momo_backend/service/ProfileService.java
 package com.momo.momo_backend.service;
 
-import com.momo.momo_backend.dto.ProfileUpdateResponse;
+import com.momo.momo_backend.dto.ProfileDto;
 import com.momo.momo_backend.entity.User;
 import com.momo.momo_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,7 @@ public class ProfileService {
 
     // 프로필 수정 메서드
     @Transactional
-    public ProfileUpdateResponse updateProfile(Long userNo, String nickname, MultipartFile imageFile) {
+    public ProfileDto.UpdateResponse updateProfile(Long userNo, String nickname, MultipartFile imageFile) {
         User user = userRepository.findById(userNo)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -47,7 +46,7 @@ public class ProfileService {
 
         userRepository.save(user);
 
-        return ProfileUpdateResponse.builder()
+        return ProfileDto.UpdateResponse.builder()
                 .message("프로필이 성공적으로 수정되었습니다.")
                 .profileImageUrl(newProfileImageUrl)
                 .build();

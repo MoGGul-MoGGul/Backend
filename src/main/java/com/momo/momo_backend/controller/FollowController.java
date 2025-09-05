@@ -1,9 +1,8 @@
 package com.momo.momo_backend.controller;
 
 import com.momo.momo_backend.dto.ErrorResponse;
-import com.momo.momo_backend.dto.FollowRequest;
 import com.momo.momo_backend.dto.MessageResponse;
-import com.momo.momo_backend.dto.UnfollowRequest;
+import com.momo.momo_backend.dto.FollowDto;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.service.FollowService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,7 @@ public class FollowController {
     // 팔로우 요청 처리
     @PostMapping
     public ResponseEntity<?> followUser(
-            @RequestBody FollowRequest request,
+            @RequestBody FollowDto.Request request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             // followerId는 토큰에서, followeeId는 요청 본문에서 가져옴
@@ -44,7 +43,7 @@ public class FollowController {
     // 언팔로우 요청 처리
     @DeleteMapping
     public ResponseEntity<?> unfollowUser(
-            @RequestBody UnfollowRequest request,
+            @RequestBody FollowDto.Request request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             followService.unfollowUser(userDetails.getUser().getNo(), request.getFolloweeId());

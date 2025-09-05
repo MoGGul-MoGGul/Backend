@@ -1,6 +1,6 @@
 package com.momo.momo_backend.service;
 
-import com.momo.momo_backend.dto.*;
+import com.momo.momo_backend.dto.TipDto;
 import com.momo.momo_backend.dto.ai.AiResultResponseDto;
 import com.momo.momo_backend.dto.ai.AiTaskResponseDto;
 import com.momo.momo_backend.entity.*;
@@ -46,7 +46,7 @@ public class TipService {
 
     // 꿀팁 요약 생성 (AI API 연동)
     @Transactional
-    public TipCreateResponse createTip(TipCreateRequest request) throws InterruptedException {
+    public TipDto.CreateResponse createTip(TipDto.CreateRequest request) throws InterruptedException {
         String processUrl = aiApiUrl + "/async-index/";
         Map<String, String> body = new HashMap<>();
         body.put("url", request.getUrl());
@@ -66,7 +66,7 @@ public class TipService {
                 String finalTitle = StringUtils.hasText(request.getTitle()) ? request.getTitle() : r.getTitle();
                 List<String> finalTags = (request.getTags() != null && !request.getTags().isEmpty())
                         ? request.getTags() : r.getTags();
-                return TipCreateResponse.builder()
+                return TipDto.CreateResponse.builder()
                         .url(request.getUrl())
                         .title(finalTitle)
                         .tags(finalTags)
@@ -81,7 +81,7 @@ public class TipService {
 
     // 꿀팁 등록(저장)
     @Transactional
-    public TipRegisterResponse registerTip(TipRegisterRequest request, Long userId) {
+    public TipDto.DetailResponse registerTip(TipDto.RegisterRequest request, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
@@ -144,23 +144,12 @@ public class TipService {
             notifyGroupMembers(tip);
         }
 
-        return TipRegisterResponse.builder()
-                .tipNo(tip.getNo())
-                .storageNo(storage.getNo())
-                .isPublic(tip.getIsPublic())
-                .summary(tip.getContentSummary())
-                .url(tip.getUrl())
-                .userNo(user.getNo())
-                .nickname(user.getNickname())
-                .thumbnailImageUrl(tip.getThumbnailUrl())
-                .title(tip.getTitle())
-                .tags(tagNames)
-                .build();
+        return TipDto.DetailResponse.from(tip, storage.getNo());
     }
 
     // 팁 수정
     @Transactional
-    public TipResponse update(Long tipNo, Long userNo, TipUpdateRequest req) {
+    public TipDto.DetailResponse update(Long tipNo, Long userNo, TipDto.UpdateRequest req) {
         Tip tip = tipRepository.findByNoAndUser_No(tipNo, userNo)
                 .orElseThrow(() -> new AccessDeniedException("수정 권한이 없습니다."));
 
@@ -190,7 +179,7 @@ public class TipService {
                 "v", "v1"
         );
 
-        return TipResponse.from(saved);
+        return TipDto.DetailResponse.from(saved);
     }
 
     // 팁 삭제

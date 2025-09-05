@@ -16,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/groups")
@@ -28,7 +27,7 @@ public class GroupController {
 
     // 그룹 생성 API
     @PostMapping
-    public ResponseEntity<?> createGroup(
+    public ResponseEntity<Object> createGroup(
             @RequestBody GroupDto.Request request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("그룹 생성 요청 - 그룹명: {}, 사용자: {}", request.getName(), userDetails.getUsername());
@@ -64,7 +63,7 @@ public class GroupController {
 
     // 그룹 멤버 초대 API (여러 명 동시 초대 가능)
     @PostMapping("/{groupNo}/invite")
-    public ResponseEntity<?> inviteGroupMember(
+    public ResponseEntity<Object> inviteGroupMember(
             @PathVariable Long groupNo,
             @RequestBody GroupDto.InviteRequest request, // userLoginIds 목록을 받음
             @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -104,7 +103,7 @@ public class GroupController {
 
     // 그룹 멤버 나가기 API
     @DeleteMapping("/{groupNo}/leave")
-    public ResponseEntity<?> leaveGroup(
+    public ResponseEntity<Object> leaveGroup(
             @PathVariable Long groupNo,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("그룹 멤버 나가기 요청 - 그룹 ID: {}, 사용자: {}", groupNo, userDetails.getUsername());
@@ -139,7 +138,7 @@ public class GroupController {
 
     // 그룹 멤버 조회 API
     @GetMapping("/{groupNo}/members")
-    public ResponseEntity<?> getGroupMembers(
+    public ResponseEntity<Object> getGroupMembers(
             @PathVariable Long groupNo,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("그룹 멤버 조회 요청 - 그룹 ID: {}, 요청 사용자: {}", groupNo, userDetails.getUsername());
@@ -149,7 +148,7 @@ public class GroupController {
 
             List<GroupDto.MemberResponse> responseList = members.stream()
                     .map(GroupDto.MemberResponse::from)
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.info("그룹 멤버 조회 성공 - 그룹 ID: {}, 조회된 멤버 수: {}", groupNo, responseList.size());
             return ResponseEntity.ok(responseList);
@@ -182,7 +181,7 @@ public class GroupController {
 
     // 그룹 목록 조회 API (사용자가 속한 그룹)
     @GetMapping("/check")
-    public ResponseEntity<?> getGroupsForUser(
+    public ResponseEntity<Object> getGroupsForUser(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("그룹 목록 조회 요청 - 사용자: {}", userDetails.getUsername());
         try {
@@ -212,7 +211,7 @@ public class GroupController {
 
     // 그룹명 수정 API
     @PutMapping("/{groupNo}/name")
-    public ResponseEntity<?> updateGroupName(
+    public ResponseEntity<Object> updateGroupName(
             @PathVariable Long groupNo,
             @RequestBody GroupDto.Request request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {

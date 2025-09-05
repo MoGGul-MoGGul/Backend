@@ -20,7 +20,7 @@ public class FollowController {
 
     // 팔로우 요청 처리
     @PostMapping
-    public ResponseEntity<?> followUser(
+    public ResponseEntity<Object> followUser(
             @RequestBody FollowDto.Request request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
@@ -42,7 +42,7 @@ public class FollowController {
 
     // 언팔로우 요청 처리
     @DeleteMapping
-    public ResponseEntity<?> unfollowUser(
+    public ResponseEntity<Object> unfollowUser(
             @RequestBody FollowDto.Request request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {

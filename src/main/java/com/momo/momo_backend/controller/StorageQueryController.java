@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/query/storage")
@@ -27,7 +26,7 @@ public class StorageQueryController {
 
     // 특정 사용자의 보관함 목록 조회 API
     @GetMapping("/{userNo}")
-    public ResponseEntity<?> getStoragesByUser(@PathVariable Long userNo) {
+    public ResponseEntity<Object> getStoragesByUser(@PathVariable Long userNo) {
         log.info("보관함 목록 조회 요청 - userNo: {}", userNo);
         try {
             List<Storage> storages = storageQueryService.findByUser(userNo);
@@ -39,7 +38,7 @@ public class StorageQueryController {
                             .name(storage.getName())
                             .userNo(storage.getUser().getNo())
                             .build())
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.info("보관함 목록 조회 성공 - userNo: {}, 조회된 보관함 수: {}", userNo, responseList.size());
             return ResponseEntity.ok(responseList);
@@ -56,7 +55,7 @@ public class StorageQueryController {
 
     // 특정 그룹의 보관함 목록 조회 API
     @GetMapping("/group/{groupNo}")
-    public ResponseEntity<?> getGroupStorages(
+    public ResponseEntity<Object> getGroupStorages(
             @PathVariable Long groupNo,
             @AuthenticationPrincipal CustomUserDetails userDetails) { // 인증된 사용자 정보 필요
         log.info("그룹 보관함 목록 조회 요청 - 그룹 ID: {}, 요청 사용자: {}", groupNo, userDetails.getUsername());
@@ -67,7 +66,7 @@ public class StorageQueryController {
             // Storage 엔티티 리스트를 GroupStorageResponse DTO 리스트로 변환
             List<GroupDto.StorageResponse> responseList = groupStorages.stream()
                     .map(GroupDto.StorageResponse::from)
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.info("그룹 보관함 목록 조회 성공 - 그룹 ID: {}, 조회된 보관함 수: {}", groupNo, responseList.size());
             return ResponseEntity.ok(responseList); // 200 OK 응답
@@ -100,7 +99,7 @@ public class StorageQueryController {
 
     // 사용자가 속한 모든 그룹의 보관함 조회 API
     @GetMapping("/group-all")
-    public ResponseEntity<?> getStoragesForUserGroups(
+    public ResponseEntity<Object> getStoragesForUserGroups(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         log.info("사용자의 모든 그룹 보관함 조회 요청 - 요청 사용자: {}", userDetails.getUsername());
         try {
@@ -110,7 +109,7 @@ public class StorageQueryController {
 
             List<GroupDto.StorageResponse> responseList = storages.stream()
                     .map(GroupDto.StorageResponse::from)
-                    .collect(Collectors.toList());
+                    .toList();
 
             log.info("사용자 그룹 보관함 목록 조회 성공 - 사용자: {}, 조회된 보관함 수: {}", userNo, responseList.size());
             return ResponseEntity.ok(responseList);

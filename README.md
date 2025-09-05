@@ -48,7 +48,7 @@ API 제공, AI 연동 및 꿀팁 생성, 소셜 기능 처리, 핵심 데이터 
 - **소셜 기능**: 사용자 간 팔로우/언팔로우 및 관련 알림 기능 (`src/main/java/com/momo/momo_backend/controller/FollowController.java`)
 - **그룹**: 그룹을 생성하고 멤버를 초대하여 꿀팁을 공유 (`src/main/java/com/momo/momo_backend/controller/GroupController.java`)
 - **북마크**: 마음에 드는 꿀팁을 북마크하고 주간 랭킹 조회 (`src/main/java/com/momo/momo_backend/controller/BookmarkController.java`)
-- **실시간 기능**: 새로운 꿀팁, 알림, 조회수 랭킹 등을 실시간으로 사용자에게 전달 (`src/main/java/com/momo/momo_backend/realtime/service/TipViewsRankService.java`)
+- **실시간 기능**: 새로운 꿀팁, 알림 등을 실시간으로 사용자에게 전달 (`src/main/java/com/momo/momo_backend/realtime/service/TipViewsRankService.java`)
 
 ## 툴체인 & 프레임워크
 

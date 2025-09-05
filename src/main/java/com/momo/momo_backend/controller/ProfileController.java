@@ -2,6 +2,7 @@ package com.momo.momo_backend.controller;
 
 import com.momo.momo_backend.dto.ErrorResponse;
 import com.momo.momo_backend.dto.ProfileDto;
+import com.momo.momo_backend.exception.ProfileImageUploadException;
 import com.momo.momo_backend.security.CustomUserDetails;
 import com.momo.momo_backend.service.ProfileService;
 import lombok.RequiredArgsConstructor;
@@ -20,29 +21,26 @@ public class ProfileController {
 
     // 프로필 수정
     @PutMapping
-    public ResponseEntity<?> updateUserProfile(
+    public ResponseEntity<Object> updateUserProfile(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(value = "nickname", required = false) String nickname,
             @RequestParam(value = "image", required = false) MultipartFile imageFile) {
 
         try {
-            // 서비스 로직 호출 (닉네임과 이미지 파일을 모두 전달)
             ProfileDto.UpdateResponse response = profileService.updateProfile(userDetails.getUser().getNo(), nickname, imageFile);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            ErrorResponse errorResponse = ErrorResponse.builder()
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.builder()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .message(e.getMessage())
                     .error(e.getClass().getSimpleName())
-                    .build();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        } catch (RuntimeException e) {
-            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .build());
+        } catch (ProfileImageUploadException e) { // <-- 새로운 catch 블록 추가
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse.builder()
                     .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .message(e.getMessage())
                     .error(e.getClass().getSimpleName())
-                    .build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+                    .build());
         }
     }
 }

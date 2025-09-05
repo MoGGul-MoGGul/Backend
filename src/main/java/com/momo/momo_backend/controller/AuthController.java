@@ -23,6 +23,10 @@ public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    // 문자열 상수화
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    private static final String SET_COOKIE_HEADER = "Set-Cookie";
+
     public record ResetPwRequest(String id, String nickname, String newPassword) {}
     public record FindIdRequest(String nickname, String password) {}
 
@@ -40,16 +44,16 @@ public class AuthController {
         AuthDto.LoginResponse body = authService.login(request);
 
         // Refresh 토큰을 HttpOnly 쿠키로 심어줌
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", body.getRefreshToken())
+        ResponseCookie refreshCookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, body.getRefreshToken())
                 .httpOnly(true)
-                .secure(true)          // 로컬 http 일 경우 false 로 바꿔도 됨
-                .path("/")             // 필요하면 /api/auth 로 좁힐 수 있음
-                .sameSite("None")      // 프론트가 다른 포트/도메인이면 None 권장
-                .maxAge(60L * 60 * 24 * 14) // 예시 14일; JWT 만료와 맞추면 좋음
+                .secure(true)
+                .path("/")
+                .sameSite("None")
+                .maxAge(60L * 60 * 24 * 14)
                 .build();
 
         return ResponseEntity.ok()
-                .header("Set-Cookie", refreshCookie.toString())
+                .header(SET_COOKIE_HEADER, refreshCookie.toString())
                 .body(body);
     }
 
@@ -60,7 +64,7 @@ public class AuthController {
         authService.logout(authorizationHeader);
 
         // RT 쿠키 삭제
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+        ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
@@ -69,19 +73,19 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok()
-                .header("Set-Cookie", deleteCookie.toString())
+                .header(SET_COOKIE_HEADER, deleteCookie.toString())
                 .build();
     }
 
     // 토큰 재발급
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(HttpServletRequest request,
-                                     HttpServletResponse response) {
+    public ResponseEntity<Object> refresh(HttpServletRequest request,
+                                          HttpServletResponse response) {
         // 1) 쿠키 우선
         String refreshFromCookie = null;
         if (request.getCookies() != null) {
             for (Cookie c : request.getCookies()) {
-                if ("refreshToken".equals(c.getName())) {
+                if (REFRESH_TOKEN_COOKIE_NAME.equals(c.getName())) {
                     refreshFromCookie = c.getValue();
                     break;
                 }
@@ -105,7 +109,7 @@ public class AuthController {
             AuthDto.LoginResponse newTokens = authService.refresh(refreshToken);
 
             // 새 RT로 쿠키 갱신
-            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newTokens.getRefreshToken())
+            ResponseCookie refreshCookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, newTokens.getRefreshToken())
                     .httpOnly(true)
                     .secure(true)
                     .path("/")
@@ -114,7 +118,7 @@ public class AuthController {
                     .build();
 
             return ResponseEntity.ok()
-                    .header("Set-Cookie", refreshCookie.toString())
+                    .header(SET_COOKIE_HEADER, refreshCookie.toString())
                     .body(newTokens);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -153,7 +157,7 @@ public class AuthController {
 
     // 비밀번호 재설정
     @PostMapping("/reset-pw")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPwRequest req) {
+    public ResponseEntity<Object> resetPassword(@RequestBody ResetPwRequest req) {
         try {
             authService.resetPassword(req.id(), req.nickname(), req.newPassword());
             return ResponseEntity.ok().build();
@@ -175,11 +179,6 @@ public class AuthController {
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             // 사용자가 존재하지 않는 경우 등 예외 처리
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .status(HttpStatus.NOT_FOUND.value())
-                    .message(e.getMessage())
-                    .error(e.getClass().getSimpleName())
-                    .build();
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }

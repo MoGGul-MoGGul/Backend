@@ -29,8 +29,8 @@ public class BookmarkController {
 
     // 북마크 생성
     @PostMapping
-    public ResponseEntity<?> bookmarkAndSaveTip(@RequestBody BookmarkAndSaveRequest request,
-                                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<Object> bookmarkAndSaveTip(@RequestBody BookmarkAndSaveRequest request,
+                                                     @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             bookmarkService.bookmarkAndSaveTip(request, userDetails.getUser().getNo());
             MessageResponse response = MessageResponse.builder()
@@ -57,7 +57,7 @@ public class BookmarkController {
 
     // 북마크 삭제
     @DeleteMapping("/{bookmarkNo}")
-    public ResponseEntity<?> deleteBookmark(@PathVariable Long bookmarkNo,
+    public ResponseEntity<Object> deleteBookmark(@PathVariable Long bookmarkNo,
                                             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {
             bookmarkService.delete(bookmarkNo, userDetails.getUser().getNo());

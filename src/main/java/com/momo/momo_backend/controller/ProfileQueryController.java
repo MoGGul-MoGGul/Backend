@@ -21,7 +21,7 @@ public class ProfileQueryController {
     private final ProfileQueryService profileQueryService;
 
     @GetMapping("/{userNo}")
-    public ResponseEntity<?> getUserProfile(
+    public ResponseEntity<Object> getUserProfile(
             @PathVariable Long userNo,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {

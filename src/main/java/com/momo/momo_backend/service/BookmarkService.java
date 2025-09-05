@@ -113,7 +113,7 @@ public class BookmarkService {
         );
         notificationRepository.save(notification);
 
-        // ✅ 저장 직후, 개인 큐 전송용 이벤트 발행 (AFTER_COMMIT에서 리스너가 처리)
+        // 저장 직후, 개인 큐 전송용 이벤트 발행 (AFTER_COMMIT에서 리스너가 처리)
         String actorName = bookmarker.getNickname() != null ? bookmarker.getNickname() : bookmarker.getLoginId();
         String tipTitle  = tip.getTitle() != null ? tip.getTitle() : "제목 없음";
         String message   = actorName + "님이 당신의 꿀팁을 북마크했습니다: " + tipTitle;

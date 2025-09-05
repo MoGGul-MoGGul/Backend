@@ -13,8 +13,8 @@ import java.util.List;
 @Getter
 public class CustomUserDetails implements UserDetails {
 
-    private final User user;
-    private final UserCredential credential;
+    private final transient User user;
+    private final transient UserCredential credential;
 
     public CustomUserDetails(User user, UserCredential credential) {
         this.user = user;

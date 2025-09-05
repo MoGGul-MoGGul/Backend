@@ -44,7 +44,7 @@ public class StorageController {
 
     // 보관함 수정
     @PutMapping("/{storageNo}")
-    public ResponseEntity<?> updateStorage( // 반환 타입을 와일드카드로 변경하여 ErrorResponse도 반환 가능하게 함
+    public ResponseEntity<Object> updateStorage( // 반환 타입을 와일드카드로 변경하여 ErrorResponse도 반환 가능하게 함
         @PathVariable Long storageNo,
         @RequestBody StorageDto.UpdateRequest request,
         @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -78,7 +78,7 @@ public class StorageController {
 
     // 보관함 삭제
     @DeleteMapping("/{storageNo}")
-    public ResponseEntity<?> deleteStorage( // 반환 타입을 ResponseEntity<?>로 변경
+    public ResponseEntity<Object> deleteStorage( // 반환 타입을 ResponseEntity<?>로 변경
                                             @PathVariable Long storageNo,
                                             @AuthenticationPrincipal CustomUserDetails userDetails) {
         try {

@@ -27,6 +27,8 @@ public class TipSearchService {
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
 
+    private static final String ORDER_BY_CREATED_AT_DESC = " ORDER BY t.createdAt DESC";
+
     // 전체 꿀팁 검색(public 꿀팁만)
     public List<TipDto.DetailResponse> searchPublic(String keyword, String mode, int page, int size) {
         String base = """
@@ -38,7 +40,7 @@ public class TipSearchService {
         """;
         var params = new HashMap<String, Object>();
         String jpql = appendKeywordClause(base, "t", keyword, mode, params)
-                + " ORDER BY t.createdAt DESC";
+                + ORDER_BY_CREATED_AT_DESC; // 상수 사용
         return queryTips(jpql, params, page, size);
     }
 
@@ -55,7 +57,7 @@ public class TipSearchService {
         var params = new HashMap<String, Object>();
         params.put("userNo", userNo);
         String jpql = appendKeywordClause(base, "t", keyword, mode, params)
-                + " ORDER BY t.createdAt DESC";
+                + ORDER_BY_CREATED_AT_DESC; // 상수 사용
         return queryTips(jpql, params, page, size);
     }
 
@@ -83,7 +85,7 @@ public class TipSearchService {
         var params = new HashMap<String, Object>();
         params.put("groupNo", groupNo);
         String jpql = appendKeywordClause(base, "t", keyword, mode, params)
-                + " ORDER BY t.createdAt DESC";
+                + ORDER_BY_CREATED_AT_DESC; // 상수 사용
         return queryTips(jpql, params, page, size);
     }
 
@@ -116,7 +118,7 @@ public class TipSearchService {
         var params = new HashMap<String, Object>();
         params.put("storageNo", storageNo);
         String jpql = appendKeywordClause(base, "t", keyword, mode, params)
-                + " ORDER BY t.createdAt DESC";
+                + ORDER_BY_CREATED_AT_DESC; // 상수 사용
         return queryTips(jpql, params, page, size);
     }
 
@@ -131,7 +133,7 @@ public class TipSearchService {
         List<Tip> tips = q.getResultList();
         return tips.stream()
                 .map(TipDto.DetailResponse::from)
-                .collect(Collectors.toList());
+                .toList(); // SonarQube: toList()로 변경
     }
 
     // 키워드 조건절 추가

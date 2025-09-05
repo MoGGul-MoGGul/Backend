@@ -24,9 +24,9 @@ public class TipController {
 
     // 꿀팁 생성 (AI 정보 미리보기)
     @PostMapping("/generate")
-    public ResponseEntity<TipDto.CreateResponse> createTip(
-            @RequestBody TipDto.CreateRequest request,
-            @AuthenticationPrincipal CustomUserDetails user
+    public ResponseEntity<Object> createTip(
+                                             @RequestBody TipDto.CreateRequest request,
+                                             @AuthenticationPrincipal CustomUserDetails user
     ) {
         String who = (user != null) ? user.getUsername() : "anonymous";
         log.info("꿀팁 생성 요청 by={}, url={}, title(pre):{}, tags(pre):{}",
@@ -35,6 +35,11 @@ public class TipController {
             TipDto.CreateResponse response = tipService.createTip(request);
             log.info("꿀팁 생성 미리보기 완료 title={}, tags={}", response.getTitle(), response.getTags());
             return ResponseEntity.ok(response);
+        } catch (InterruptedException e) {
+            // 스레드 중단 요청을 받았으므로, 현재 스레드의 중단 상태를 다시 설정합니다.
+            Thread.currentThread().interrupt();
+            log.error("꿀팁 생성 중 스레드 중단 오류: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         } catch (Exception e) {
             log.error("꿀팁 생성 중 오류: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -49,7 +54,6 @@ public class TipController {
     ) {
         Long userNo = userDetails.getUser().getNo();
 
-        // DTO 스펙에 맞춘 로깅(= tipId/tipNo/storageId 없음)
         log.info("꿀팁 등록 요청 userNo={}, storageNo={}, isPublic={}, url={}, title={}, tags={}",
                 userNo, request.getStorageNo(), request.getIsPublic(),
                 request.getUrl(), request.getTitle(), request.getTags());
@@ -58,7 +62,7 @@ public class TipController {
         log.info("꿀팁 등록 완료: tipNo={}, storageNo={}, public={}, title={}",
                 response.getNo(), response.getStorageNo(), response.getIsPublic(), response.getTitle());
         return ResponseEntity.ok(response);
-}
+    }
 
     // 꿀팁 수정
     @PutMapping("/{no}")
@@ -73,9 +77,9 @@ public class TipController {
 
     // 꿀팁 삭제
     @DeleteMapping("/{no}")
-    public ResponseEntity<?> delete(
-            @PathVariable Long no,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+    public ResponseEntity<Object> delete(
+                                          @PathVariable Long no,
+                                          @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         try {
             Long userNo = userDetails.getUser().getNo();

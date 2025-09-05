@@ -81,7 +81,7 @@ public class Tip {
         this.title = title;
         this.contentSummary = contentSummary;
         this.thumbnailUrl = thumbnailUrl;
-        this.isPublic = (isPublic != null) ? isPublic : true;
+        this.isPublic = isPublic != Boolean.FALSE;
         this.taskId = taskId;
     }
 }

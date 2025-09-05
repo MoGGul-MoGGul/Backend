@@ -3,7 +3,6 @@ package com.momo.momo_backend.dto;
 import com.momo.momo_backend.entity.User;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * 프로필 관련 DTO를 모아두는 컨테이너 클래스
@@ -11,13 +10,6 @@ import lombok.Setter;
 public final class ProfileDto {
 
     private ProfileDto() {}
-
-    // 프로필 수정 요청 DTO
-    @Getter
-    @Setter
-    public static class UpdateRequest {
-        private String nickname;
-    }
 
     // 프로필 수정 응답 DTO
     @Getter

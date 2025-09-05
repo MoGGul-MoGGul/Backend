@@ -9,8 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -22,18 +23,23 @@ public class BookmarkQueryService {
     // 주간 북마크 랭킹 조회
     public List<TipDto.WeeklyRankingResponse> getWeeklyBookmarkRanking() {
         LocalDateTime startDate = LocalDateTime.now().minusDays(7);
-        // 상위 10개만 조회하도록 PageRequest 설정
         PageRequest pageRequest = PageRequest.of(0, 10);
 
         List<Object[]> results = bookmarkRepository.findWeeklyRanking(startDate, pageRequest);
 
+        if (results == null) {
+            return Collections.emptyList();
+        }
+
         return results.stream()
                 .map(result -> {
-                    Tip tip = (Tip) result[0];
-                    Long count = (Long) result[1];
-                    return TipDto.WeeklyRankingResponse.from(tip, count);
+                    if (result != null && result.length >= 2 &&
+                            result[0] instanceof Tip tip && result[1] instanceof Long count) {
+                        return TipDto.WeeklyRankingResponse.from(tip, count);
+                    }
+                    return null;
                 })
-                .collect(Collectors.toList());
+                .filter(Objects::nonNull)
+                .toList();
     }
-
 }

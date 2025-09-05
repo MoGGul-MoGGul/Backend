@@ -29,7 +29,7 @@ public class UserQueryService {
                         .nickname(user.getNickname())
                         .profileImageUrl(user.getProfileImage())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 사용자 아이디로 검색

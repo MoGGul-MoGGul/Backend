@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +19,6 @@ public class NotificationService {
         List<Notification> notifications = notificationRepository.findByReceiver_NoOrderByCreatedAtDesc(userNo);
         return notifications.stream()
                 .map(NotificationResponse::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

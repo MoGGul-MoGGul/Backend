@@ -32,7 +32,7 @@ public class FollowQueryService {
                             followRepository.existsByFollower_NoAndFollowing_No(myUserNo, follower.getNo());
                     return FollowDto.Response.from(follower, isFollowing);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 내가 팔로우하는 사용자 목록(팔로잉) 조회
@@ -48,6 +48,6 @@ public class FollowQueryService {
                             followRepository.existsByFollower_NoAndFollowing_No(myUserNo, following.getNo());
                     return FollowDto.Response.from(following, isFollowing);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 }

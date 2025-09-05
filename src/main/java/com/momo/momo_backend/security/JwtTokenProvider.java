@@ -19,6 +19,7 @@ public class JwtTokenProvider {
     private final Key key;
     private final long accessValidityMs;   // 기본 1시간
     private final long refreshValidityMs;  // 기본 14일
+    private static final String USER_NO_CLAIM_KEY = "userNo";
 
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secret,
@@ -39,7 +40,7 @@ public class JwtTokenProvider {
         // 주의: setClaims(...)는 기존 클레임을 모두 덮어씌웁니다.
         return Jwts.builder()
                 .setSubject(loginId)          // sub 유지
-                .claim("userNo", userNo)      // 필요한 클레임만 개별 추가
+                .claim(USER_NO_CLAIM_KEY, userNo)      // 필요한 클레임만 개별 추가
                 .setIssuedAt(iat)
                 .setExpiration(exp)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -54,7 +55,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject(loginId)
-                .claim("userNo", userNo)
+                .claim(USER_NO_CLAIM_KEY, userNo)
                 .setIssuedAt(iat)
                 .setExpiration(exp)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -81,7 +82,7 @@ public class JwtTokenProvider {
         if (token == null) return null;
         Claims claims = parseClaims(token);
         if (claims == null) return null;
-        Object v = claims.get("userNo");
+        Object v = claims.get(USER_NO_CLAIM_KEY);
         if (v == null) return null;
         if (v instanceof Number n) return n.longValue();
         try { return Long.parseLong(String.valueOf(v)); }

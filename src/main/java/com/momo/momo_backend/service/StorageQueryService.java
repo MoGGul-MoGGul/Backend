@@ -28,7 +28,7 @@ public class StorageQueryService {
     public List<Storage> findByUser(Long userNo) {
 
         // 2. 사용자가 존재하면 해당 사용자의 보관함 목록 조회
-            // 개인 보관함만 조회하도록 필터링 조건 추가
+        // 개인 보관함만 조회하도록 필터링 조건 추가
         return storageRepository.findAllByUser_NoAndGroupIsNull(userNo);
     }
 
@@ -62,13 +62,11 @@ public class StorageQueryService {
         List<Group> userGroups = groupMemberRepository.findAllByUser_No(user.getNo())
                 .stream()
                 .map(GroupMember::getGroup)
-                .collect(Collectors.toList());
+                .toList();
 
         // 3. 사용자가 속한 각 그룹의 보관함을 조회합니다.
-        List<Storage> allGroupStorages = userGroups.stream()
+        return userGroups.stream()
                 .flatMap(group -> storageRepository.findAllByGroup_No(group.getNo()).stream())
-                .collect(Collectors.toList());
-
-        return allGroupStorages;
+                .toList();
     }
 }

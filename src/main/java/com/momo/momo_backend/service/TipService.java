@@ -5,6 +5,7 @@ import com.momo.momo_backend.dto.ai.AiResultResponseDto;
 import com.momo.momo_backend.dto.ai.AiTaskResponseDto;
 import com.momo.momo_backend.entity.*;
 import com.momo.momo_backend.enums.NotificationType;
+import com.momo.momo_backend.exception.AiProcessingException;
 import com.momo.momo_backend.realtime.events.NotificationCreatedEvent;
 import com.momo.momo_backend.repository.*;
 import jakarta.transaction.Transactional;
@@ -40,9 +41,9 @@ public class TipService {
     private final StorageTipRepository storageTipRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final RestTemplate restTemplate;
-
-    // 공개 피드 브로드캐스트 & 개인 큐 이벤트
     private final ApplicationEventPublisher eventPublisher;
+
+    private static final String DEFAULT_TITLE = "제목 없음";
 
     // 꿀팁 요약 생성 (AI API 연동)
     @Transactional
@@ -53,7 +54,10 @@ public class TipService {
 
         AiTaskResponseDto task = restTemplate.postForObject(processUrl, body, AiTaskResponseDto.class);
         String taskId = (task != null) ? task.getTaskId() : null;
-        if (!StringUtils.hasText(taskId)) throw new RuntimeException("AI task 생성 실패");
+
+        if (!StringUtils.hasText(taskId)) {
+            throw new AiProcessingException("AI task 생성 실패");
+        }
 
         String resultUrl = aiApiUrl + "/task-status/" + taskId;
         long start = System.currentTimeMillis();
@@ -76,7 +80,7 @@ public class TipService {
             }
             Thread.sleep(2000);
         }
-        throw new RuntimeException("AI processing timed out: " + taskId);
+        throw new AiProcessingException("AI processing timed out: " + taskId);
     }
 
     // 꿀팁 등록(저장)
@@ -86,7 +90,7 @@ public class TipService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
         Tip tip = Tip.builder()
-                .title(StringUtils.hasText(request.getTitle()) ? request.getTitle() : "제목 없음")
+                .title(StringUtils.hasText(request.getTitle()) ? request.getTitle() : DEFAULT_TITLE) // 상수 사용
                 .url(request.getUrl())
                 .contentSummary(request.getSummary())
                 .thumbnailUrl(request.getThumbnailImageUrl())
@@ -97,7 +101,6 @@ public class TipService {
         tip.setUpdatedAt(LocalDateTime.now());
         tipRepository.save(tip);
 
-        // 태그 upsert + 매핑
         List<String> tagNames = (request.getTags() != null) ? request.getTags() : Collections.emptyList();
         for (String tagName : new LinkedHashSet<>(tagNames)) {
             if (!StringUtils.hasText(tagName)) continue;
@@ -105,10 +108,9 @@ public class TipService {
                     .orElseGet(() -> tagRepository.save(Tag.builder().name(tagName).build()));
             TipTag link = TipTag.builder().tip(tip).tag(tag).build();
             tipTagRepository.save(link);
-            tip.getTipTags().add(link); // 브로드캐스트용 태그 최신화
+            tip.getTipTags().add(link);
         }
 
-        // 보관함 매핑 (중복 방지 + 그룹 보관함 권한 체크)
         Storage storage = storageRepository.findById(request.getStorageNo())
                 .orElseThrow(() -> new RuntimeException("Storage not found with id: " + request.getStorageNo()));
         if (storage.getGroup() != null) {
@@ -125,20 +127,9 @@ public class TipService {
                     .tip(tip)
                     .build();
             storageTipRepository.save(storageTip);
-            tip.getStorageTips().add(storageTip); // 메모리 컬렉션도 동기화(그룹 알림 누락 방지)
+            tip.getStorageTips().add(storageTip);
         }
 
-        // 공개 피드 브로드캐스트
-        Map<String, Object> feed = Map.of(
-                "type", "tip:new",
-                "tipId", tip.getNo(),
-                "author", Optional.ofNullable(user.getNickname()).orElse(user.getLoginId()),
-                "tags", tip.getTipTags().stream().map(tt -> tt.getTag().getName()).toList(),
-                "createdAt", tip.getCreatedAt(),
-                "v", "v1"
-        );
-
-        // 공개글이면 알림 저장 + 개인 큐 이벤트
         if (Boolean.TRUE.equals(tip.getIsPublic())) {
             notifyFollowers(tip);
             notifyGroupMembers(tip);
@@ -170,15 +161,6 @@ public class TipService {
 
         Tip saved = tipRepository.save(tip);
 
-        Map<String, Object> feed = Map.of(
-                "type", "tip:update",
-                "tipId", saved.getNo(),
-                "author", Optional.ofNullable(saved.getUser().getNickname()).orElse(saved.getUser().getLoginId()),
-                "tags", saved.getTipTags().stream().map(tt -> tt.getTag().getName()).toList(),
-                "createdAt", saved.getCreatedAt(),
-                "v", "v1"
-        );
-
         return TipDto.DetailResponse.from(saved);
     }
 
@@ -190,13 +172,12 @@ public class TipService {
         tipRepository.delete(tip);
     }
 
-    /* ====== 알림 저장 + 개인 큐 이벤트 발행 ====== */
     private void notifyFollowers(Tip savedTip) {
         List<Follow> follows = followRepository.findByFollowing(savedTip.getUser());
         if (follows.isEmpty()) return;
 
         String actor = Optional.ofNullable(savedTip.getUser().getNickname()).orElse(savedTip.getUser().getLoginId());
-        String title = StringUtils.hasText(savedTip.getTitle()) ? savedTip.getTitle() : "제목 없음";
+        String title = StringUtils.hasText(savedTip.getTitle()) ? savedTip.getTitle() : DEFAULT_TITLE; // 상수 사용
         String message = actor + "님이 새 꿀팁을 등록했습니다: " + title;
 
         List<Notification> notis = follows.stream()
@@ -232,7 +213,7 @@ public class TipService {
         if (targets.isEmpty()) return;
 
         String actor = Optional.ofNullable(savedTip.getUser().getNickname()).orElse(savedTip.getUser().getLoginId());
-        String title = StringUtils.hasText(savedTip.getTitle()) ? savedTip.getTitle() : "제목 없음";
+        String title = StringUtils.hasText(savedTip.getTitle()) ? savedTip.getTitle() : DEFAULT_TITLE; // 상수 사용
         String message = actor + "님이 그룹 보관함에 꿀팁을 등록했습니다: " + title;
 
         List<Notification> notis = targets.stream()

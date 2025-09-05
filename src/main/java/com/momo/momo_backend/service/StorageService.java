@@ -24,10 +24,14 @@ public class StorageService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
 
+    private static final String ERROR_MSG_USER_NOT_FOUND = "사용자가 존재하지 않습니다.";
+    private static final String ERROR_MSG_STORAGE_NOT_FOUND = "보관함이 존재하지 않습니다.";
+    private static final String ERROR_MSG_GROUP_NOT_FOUND = "그룹이 존재하지 않습니다.";
+
     // 보관함 생성
     public Storage create(StorageDto.CreateRequest request, Long loginUserNo) {
         User user = userRepository.findById(loginUserNo)
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_MSG_USER_NOT_FOUND));
 
         Storage storage = Storage.builder()
                 .user(user)
@@ -36,12 +40,10 @@ public class StorageService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        // 그룹 정보가 있는 경우에만 설정 및 권한 확인
         if (request.getGroupNo() != null) {
             Group group = groupRepository.findById(request.getGroupNo())
-                    .orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));
+                    .orElseThrow(() -> new IllegalArgumentException(ERROR_MSG_GROUP_NOT_FOUND));
 
-            // 현재 로그인한 사용자가 해당 그룹의 멤버인지 확인
             boolean isMember = groupMemberRepository.existsByGroupAndUser(group, user);
             if (!isMember) {
                 throw new AccessDeniedException("그룹 보관함은 해당 그룹의 멤버만 생성할 수 있습니다.");
@@ -56,18 +58,17 @@ public class StorageService {
     @Transactional
     public Storage update(Long storageNo, Long loginUserNo, StorageDto.UpdateRequest request) {
         Storage storage = storageRepository.findById(storageNo)
-                .orElseThrow(() -> new IllegalArgumentException("보관함이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_MSG_STORAGE_NOT_FOUND));
 
         User loginUser = userRepository.findById(loginUserNo)
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_MSG_USER_NOT_FOUND));
 
-        // 그룹 보관함인 경우와 개인 보관함인 경우를 나누어 권한 확인
-        if (storage.getGroup() != null) { // 그룹 보관함인 경우
+        if (storage.getGroup() != null) {
             boolean isGroupMember = groupMemberRepository.existsByGroupAndUser(storage.getGroup(), loginUser);
             if (!isGroupMember) {
                 throw new AccessDeniedException("그룹 보관함은 해당 그룹의 멤버만 수정할 수 있습니다.");
             }
-        } else { // 개인 보관함인 경우
+        } else {
             if (!storage.getUser().getNo().equals(loginUserNo)) {
                 throw new AccessDeniedException("개인 보관함은 소유자만 수정할 수 있습니다.");
             }
@@ -80,18 +81,17 @@ public class StorageService {
     // 보관함 삭제
     public void delete(Long storageNo, Long loginUserNo) {
         Storage storage = storageRepository.findById(storageNo)
-                .orElseThrow(() -> new IllegalArgumentException("보관함이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_MSG_STORAGE_NOT_FOUND));
 
         User loginUser = userRepository.findById(loginUserNo)
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException(ERROR_MSG_USER_NOT_FOUND));
 
-        // 그룹 보관함인 경우와 개인 보관함인 경우를 나누어 권한 확인
-        if (storage.getGroup() != null) { // 그룹 보관함인 경우
+        if (storage.getGroup() != null) {
             boolean isGroupMember = groupMemberRepository.existsByGroupAndUser(storage.getGroup(), loginUser);
             if (!isGroupMember) {
                 throw new AccessDeniedException("그룹 보관함은 해당 그룹의 멤버만 삭제할 수 있습니다.");
             }
-        } else { // 개인 보관함인 경우
+        } else {
             if (!storage.getUser().getNo().equals(loginUserNo)) {
                 throw new AccessDeniedException("개인 보관함은 소유자만 삭제할 수 있습니다.");
             }

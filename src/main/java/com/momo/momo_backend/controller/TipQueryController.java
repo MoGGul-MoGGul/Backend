@@ -12,7 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/query/tips")
@@ -28,7 +27,7 @@ public class TipQueryController {
         List<Tip> tips = tipQueryService.getTipsByUser(userId);
         List<TipDto.DetailResponse> responseList = tips.stream()
                 .map(TipDto.DetailResponse::from)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(responseList);
     }
 
@@ -38,7 +37,7 @@ public class TipQueryController {
         List<Tip> tips = tipQueryService.getAllPublicTips();
         List<TipDto.DetailResponse> responseList = tips.stream()
                 .map(TipDto.DetailResponse::from)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(responseList);
     }
 
@@ -49,7 +48,7 @@ public class TipQueryController {
         List<Tip> tips = tipQueryService.getTipsByStorage(storageNo);
         List<TipDto.DetailResponse> responseList = tips.stream()
                 .map(TipDto.DetailResponse::from)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(responseList);
     }
 
@@ -63,12 +62,12 @@ public class TipQueryController {
 
     // 특정 사용자의 공개 꿀팁 목록 조회 - 토큰 불필요
     @GetMapping("/user/{userNo}")
-    public ResponseEntity<?> getPublicTipsByUser(@PathVariable Long userNo) {
+    public ResponseEntity<Object> getPublicTipsByUser(@PathVariable Long userNo) {
         try {
             List<Tip> tips = tipQueryService.getPublicTipsByUser(userNo);
             List<TipDto.DetailResponse> responseList = tips.stream()
                     .map(TipDto.DetailResponse::from)
-                    .collect(Collectors.toList());
+                    .toList();
             return ResponseEntity.ok(responseList);
         } catch (IllegalArgumentException e) {
             ErrorResponse errorResponse = ErrorResponse.builder()

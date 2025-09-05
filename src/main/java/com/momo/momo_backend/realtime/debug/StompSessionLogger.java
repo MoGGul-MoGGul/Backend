@@ -1,4 +1,3 @@
-// src/main/java/com/momo/momo_backend/realtime/debug/StompSessionLogger.java
 package com.momo.momo_backend.realtime.debug;
 
 import lombok.extern.slf4j.Slf4j;

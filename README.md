@@ -2,27 +2,27 @@
 ![header](https://capsule-render.vercel.app/api?type=cylinder&color=EAC149&height=130&section=header&text=MOGGUL-MOGGUL%20BACKEND&fontSize=55&animation=scaleIn&fontColor=FFF)
 
 <p align="center">
-  <!-- Backend & Language -->
-  <img src="https://img.shields.io/badge/java-%23007396.svg?&style=for-the-badge&logo=java&logoColor=white"/>
-  <img src="https://img.shields.io/badge/spring boot-%236DB33F.svg?&style=for-the-badge&logo=springboot&logoColor=white"/>
-  <img src="https://img.shields.io/badge/spring security-%236DB33F.svg?&style=for-the-badge&logo=springsecurity&logoColor=white"/>
-  <img src="https://img.shields.io/badge/JWT-white?style=for-the-badge&logo=jsonwebtokens&logoColor=black"/>
-  <img src="https://img.shields.io/badge/gradle-%2302303A.svg?&style=for-the-badge&logo=gradle&logoColor=white"/>
-  <br>
-  <!-- Database & Cloud -->
-  <img src="https://img.shields.io/badge/postgresql-%234169E1.svg?&style=for-the-badge&logo=postgresql&logoColor=white"/>
-  <img src="https://img.shields.io/badge/redis-%23DC382D.svg?&style=for-the-badge&logo=redis&logoColor=white"/>
-  <br>
-  <img src="https://img.shields.io/badge/amazon s3-%23569A31.svg?&style=for-the-badge&logo=amazons3&logoColor=white"/>
-  <!-- AWS Infrastructure -->
-  <img src="https://img.shields.io/badge/Amazon EC2-%23FF9900.svg?&style=for-the-badge&logo=amazon-ec2&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Amazon RDS-%23527FFF.svg?&style=for-the-badge&logo=amazon-rds&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Amazon ElastiCache-%23FF9900.svg?&style=for-the-badge&logo=amazon-elasticache&logoColor=white"/>
-  <br>
-  <!-- Tools -->
-  <img src="https://img.shields.io/badge/github-%23181717.svg?&style=for-the-badge&logo=github&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=Notion&logoColor=white"/>
-  <img src="https://img.shields.io/badge/postman-%23FF6C37.svg?&style=for-the-badge&logo=postman&logoColor=white"/>
+<!-- Backend & Language -->
+   <img src="https://img.shields.io/badge/java-%23007396.svg?&style=for-the-badge&logo=java&logoColor=white"/>
+   <img src="https://img.shields.io/badge/spring boot-%236DB33F.svg?&style=for-the-badge&logo=springboot&logoColor=white"/>
+   <img src="https://img.shields.io/badge/spring security-%236DB33F.svg?&style=for-the-badge&logo=springsecurity&logoColor=white"/>
+   <img src="https://img.shields.io/badge/JWT-white?style=for-the-badge&logo=jsonwebtokens&logoColor=black"/>
+   <img src="https://img.shields.io/badge/gradle-%2302303A.svg?&style=for-the-badge&logo=gradle&logoColor=white"/>
+   <br>
+   <!-- Database & Cloud -->
+   <img src="https://img.shields.io/badge/postgresql-%234169E1.svg?&style=for-the-badge&logo=postgresql&logoColor=white"/>
+   <img src="https://img.shields.io/badge/redis-%23DC382D.svg?&style=for-the-badge&logo=redis&logoColor=white"/>
+   <br>
+   <img src="https://img.shields.io/badge/amazon s3-%23569A31.svg?&style=for-the-badge&logo=amazons3&logoColor=white"/>
+   <!-- AWS Infrastructure -->
+   <img src="https://img.shields.io/badge/Amazon EC2-%23FF9900.svg?&style=for-the-badge&logo=amazon-ec2&logoColor=white"/>
+   <img src="https://img.shields.io/badge/Amazon RDS-%23527FFF.svg?&style=for-the-badge&logo=amazon-rds&logoColor=white"/>
+   <img src="https://img.shields.io/badge/Amazon ElastiCache-%23FF9900.svg?&style=for-the-badge&logo=amazon-elasticache&logoColor=white"/>
+   <br>
+   <!-- Tools -->
+   <img src="https://img.shields.io/badge/github-%23181717.svg?&style=for-the-badge&logo=github&logoColor=white"/>
+   <img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=Notion&logoColor=white"/>
+   <img src="https://img.shields.io/badge/postman-%23FF6C37.svg?&style=for-the-badge&logo=postman&logoColor=white"/>
 </p>
 
 ----
@@ -123,8 +123,10 @@ API 제공, AI 연동 및 꿀팁 생성, 소셜 기능 처리, 핵심 데이터 
    #### AWS S3 설정
       ```
       cloud.aws.s3.bucket=<S3_BUCKET_NAME>
-      cloud.aws.region.static=ap-northeast-2
-      cloud.aws.stack.auto=false
+   cloud.aws.credentials.access-key=<AWS_ACCESS_KEY>
+   cloud.aws.credentials.secret-key=<AWS_SECRET_KEY>
+   cloud.aws.region.static=ap-northeast-2
+   cloud.aws.stack.auto=false
       ```
 
    #### AI 서버 URL
@@ -135,6 +137,13 @@ API 제공, AI 연동 및 꿀팁 생성, 소셜 기능 처리, 핵심 데이터 
    #### CORS 설정
       ```
       cors.allowed-origins=http://localhost:3000,[http://your-frontend-domain.com](http://your-frontend-domain.com)
+      ```
+   #### 실시간(WebSocket) 설정
+      ```
+      realtime.endpoint=/ws
+   realtime.app-prefix=/app
+   realtime.user-destination-prefix=/user
+   realtime.cors.allowed-origins[0]=<ALLOWED_FRONTEND_URL_FOR_WEBSOCKET>
       ```
 
 3. **프로젝트 빌드**
